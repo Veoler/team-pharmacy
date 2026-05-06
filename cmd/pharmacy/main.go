@@ -2,9 +2,11 @@ package main
 
 import (
 	"log"
-	"github.com/gin-gonic/gin"
+
 	"github.com/Veoler/team-pharmacy/internal/config"
 	"github.com/Veoler/team-pharmacy/internal/models"
+	"github.com/gin-gonic/gin"
+
 	// "github.com/Veoler/team-pharmacy/internal/repository"
 	// "github.com/Veoler/team-pharmacy/internal/services"
 	"github.com/Veoler/team-pharmacy/internal/transport"
@@ -13,7 +15,7 @@ import (
 func main() {
 	db := config.SetUpDatabaseConnection()
 
-	if err := db.AutoMigrate(&models.Payment{}); err != nil {
+	if err := db.AutoMigrate(&models.User{}, &models.Order{}, &models.OrderItem{}, &models.Cart{}, &models.CartItem{}); err != nil {
 		log.Fatalf("не удалось выполнить миграции: %v", err)
 	}
 
