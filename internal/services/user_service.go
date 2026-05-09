@@ -108,7 +108,7 @@ func (s *userService) isValidToCreate(req models.UserCreateRequest) error {
 	}
 	addr, err := mail.ParseAddress(*req.Email)
 	if err != nil || addr.Address != *req.Email {
-		return errors.New("e-mail не корректный должно быть примерно так \"логин@example.com\"")
+		return errors.New(`e-mail не корректный должно быть примерно так "логин@example.com"`)
 	}
 	return nil
 }

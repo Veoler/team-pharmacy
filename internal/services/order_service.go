@@ -50,11 +50,11 @@ func (s *orderService) CreateOrder(req models.OrderCreateRequest) (*models.Order
 
 	for _, v := range cart.Items {
 		tempItem := models.OrderItem{
-			MedicineID:   v.MedicineID,
+			MedicineID:   *v.MedicineID,
 			MedicineName: v.MedicineName,
-			Quantity:     v.Quantity,
+			Quantity:     *v.Quantity,
 			LineTotal:    v.LineTotal,
-			PricePerUnit: v.PricePerUnit,
+			PricePerUnit: *v.PricePerUnit,
 		}
 
 		orderItem = append(orderItem, tempItem)

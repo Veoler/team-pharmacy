@@ -5,6 +5,8 @@ import (
 
 	"github.com/Veoler/team-pharmacy/internal/config"
 	"github.com/Veoler/team-pharmacy/internal/models"
+	"github.com/Veoler/team-pharmacy/internal/repository"
+	"github.com/Veoler/team-pharmacy/internal/services"
 	"github.com/gin-gonic/gin"
 
 	// "github.com/Veoler/team-pharmacy/internal/repository"
@@ -21,7 +23,13 @@ func main() {
 
 	router := gin.Default()
 
-	transport.RegisterRoutes(router)
+	userRepo := repository.NewUserRepository(db)
+	cartRepo := repository.NewCartRepository(db)
+
+	userService := services.NewUserService(userRepo)
+	cartService := services.NewCartService(cartRepo, userRepo)
+
+	transport.RegisterRoutes(router, userService, cartService)
 
 	if err := router.Run(); err != nil {
 		log.Fatalf("не удалось запустить HTTP-сервер: %v", err)

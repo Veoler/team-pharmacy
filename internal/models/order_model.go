@@ -39,7 +39,7 @@ type OrderCreateRequest struct {
 }
 
 type OrderItem struct {
-	ID           uint   `gorm:"primaryKey"`
+	gorm.Model
 	OrderID      uint   `json:"-" gorm:"not null;index"`
 	MedicineID   uint   `json:"medicine_id" gorm:"not null; index"`
 	MedicineName string `json:"medicine_name"`

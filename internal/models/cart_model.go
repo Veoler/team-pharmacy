@@ -11,17 +11,21 @@ type Cart struct {
 
 type CartCreateUpdateRequest struct {
 	User   *User      `json:"-"`
-	UserID uint       `json:"user_id"`
+	UserID *uint      `json:"user_id"`
 	Items  []CartItem `json:"items"`
 }
 
+type UpdateItemQuantityRequest struct {
+	Quantity *int `json:"quantity"`
+}
+
 type CartItem struct {
-	ID     uint `json:"item_id" gorm:"primaryKey"`
+	gorm.Model
 	CartID uint `json:"-" gorm:"not null;index"`
 	// Medicine     Medicine `json:"-"`
-	MedicineID   uint   `json:"medicine_id" gorm:"not null;index"`
+	MedicineID   *uint  `json:"medicine_id" gorm:"not null;index"`
 	MedicineName string `json:"medicine_name"`
-	Quantity     int    `json:"quantity"`
-	PricePerUnit int    `json:"price_per_unit"`
+	Quantity     *int   `json:"quantity"`
+	PricePerUnit *int   `json:"price_per_unit"`
 	LineTotal    int    `json:"line_total"`
 }

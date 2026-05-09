@@ -49,7 +49,7 @@ func (r *gormCartRepository) AddItem(cart *models.Cart) error {
 		return nil
 	}
 
-	return r.db.Save(cart).Error
+	return r.db.Session(&gorm.Session{FullSaveAssociations: true}).Save(cart).Error
 }
 
 func (r *gormCartRepository) AddQuantity(cart *models.Cart) error {
@@ -57,7 +57,7 @@ func (r *gormCartRepository) AddQuantity(cart *models.Cart) error {
 		return nil
 	}
 
-	return r.db.Save(cart).Error
+	return r.db.Session(&gorm.Session{FullSaveAssociations: true}).Save(cart).Error
 }
 
 func (r *gormCartRepository) DeleteItem(id uint) error {
