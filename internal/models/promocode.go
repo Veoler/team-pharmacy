@@ -12,6 +12,7 @@ const (
 	DisTypeFixed	DisType = "fixed"	
 )
 
+
 type Promocode struct {
 	gorm.Model
 	Code			string		`json:"code" gorm:"type:varchar(64);uniqueIndex;not null"`	// строковый код (например, SPRING2025);

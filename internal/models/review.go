@@ -4,6 +4,7 @@ import (
 	"gorm.io/gorm"
 )
 
+
 type Review struct {
 	gorm.Model
 	User		*User		`json:"-"`

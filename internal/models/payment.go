@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
+
 type PayStatus string
 
 const (
