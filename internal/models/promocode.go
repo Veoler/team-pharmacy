@@ -5,12 +5,14 @@ import (
 
 	"gorm.io/gorm"
 )
+
 type DisType string
 
 const (
 	DisTypePercent	DisType = "percent"	
 	DisTypeFixed	DisType = "fixed"	
 )
+
 
 type Promocode struct {
 	gorm.Model
