@@ -13,12 +13,10 @@ var ErrCartNotFound error = errors.New("cart по такому user_id не на
 var ErrCartItemNotFound error = errors.New("cart_item по такому id не найден")
 
 type CartService interface {
-	GetCartByUserID(id uint) (*models.Cart, error)
 	AddItem(req models.CartCreateUpdateRequest) (*models.Cart, error)
 	AddQuantity(userID, itemID *uint, newQuantity int) (*models.Cart, error)
 	DeleteItem(id uint, userID uint) error
 	DeleteCart(id uint) error
-	GetItemByID(id uint) (*models.CartItem, error)
 }
 
 type cartService struct {
@@ -31,22 +29,6 @@ func NewCartService(
 	user repository.UserRepository,
 ) CartService {
 	return &cartService{cart: cart, user: user}
-}
-
-func (s *cartService) GetCartByUserID(id uint) (*models.Cart, error) {
-	_, err := s.user.GetByID(id)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, ErrUserNotFound
-	}
-	cart, err := s.cart.GetCartByUserID(id)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrCartNotFound
-		}
-		return nil, err
-	}
-
-	return cart, nil
 }
 
 func (s *cartService) AddItem(req models.CartCreateUpdateRequest) (*models.Cart, error) {
@@ -99,18 +81,6 @@ func (s *cartService) AddItem(req models.CartCreateUpdateRequest) (*models.Cart,
 	}
 
 	return cart, nil
-}
-
-func (s *cartService) GetItemByID(id uint) (*models.CartItem, error) {
-	item, err := s.cart.GetItemByID(id)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrCartItemNotFound
-		}
-		return nil, err
-	}
-
-	return item, nil
 }
 
 func (s *cartService) validateAddItem(req models.CartCreateUpdateRequest) error {

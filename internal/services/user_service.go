@@ -15,7 +15,6 @@ var ErrUserNotFound error = errors.New("user по такому id не найд�
 type UserService interface {
 	Create(req models.UserCreateRequest) (*models.User, error)
 	GetByID(id uint) (*models.User, error)
-	GetOrdersByUserID(id uint) ([]models.Order, error)
 	GetCartByUserID(id uint) (*models.Cart, error)
 }
 
@@ -58,22 +57,6 @@ func (s *userService) GetByID(id uint) (*models.User, error) {
 	}
 
 	return user, nil
-}
-
-func (s *userService) GetOrdersByUserID(id uint) ([]models.Order, error) {
-	_, err := s.user.GetByID(id)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, ErrUserNotFound
-	}
-	orders, err := s.user.GetOrdersByUserID(id)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrOrdersNotFound
-		}
-		return nil, err
-	}
-
-	return orders, nil
 }
 
 func (s *userService) GetCartByUserID(id uint) (*models.Cart, error) {
