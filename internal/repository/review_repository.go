@@ -5,9 +5,14 @@ import (
 	"gorm.io/gorm"
 )
 
+
+// После комментирования полей в models, здесь тоже
+// закомментируйте поля которыe пока красным у вас горят
+
 type ReviewRepository interface {
 	Create(review *models.Review) error
 	GetFromMedicine(medicineID uint)([]models.Review, error)
+	GetByID(id uint)(*models.Review, error)
 	Update(review *models.Review) error
 	Delete(id uint) error
 }
@@ -40,6 +45,18 @@ func (r *reviewRepository) GetFromMedicine(medicineID uint)([]models.Review, err
 
 	return reviews, nil
 }
+
+func (r *reviewRepository) GetByID(id uint)(*models.Review, error) {
+	var review models.Review
+
+	if err := r.db.First(&review, id).Error; err != nil {
+		return nil, err
+	}
+
+	return &review, nil
+}
+
+
 
 func (r *reviewRepository) Update(review *models.Review) error {
 	if review == nil {

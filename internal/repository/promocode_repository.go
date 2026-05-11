@@ -8,10 +8,10 @@ import (
 type PromocodeRepository interface {
 	Create(promocode *models.Promocode) error
 	GetAll() ([]models.Promocode, error)
+	GetByID(id uint) (*models.Promocode, error)
 	Update(promocode *models.Promocode) error
 	Delete(id uint) error
 	Validate(promocode *models.Promocode) (*models.Promocode, error)
-
 }
 
 type promocodeRepository struct {
@@ -40,6 +40,16 @@ func(r *promocodeRepository) GetAll() ([]models.Promocode, error) {
 	return promocodes, nil
 }
 
+func(r *promocodeRepository) GetByID(id uint) (*models.Promocode, error) {
+	var promocode models.Promocode
+
+	if err := r.db.First(&promocode, id).Error; err != nil {
+		return nil, err
+	}
+
+	return &promocode, nil
+}
+
 func(r *promocodeRepository) Update(promocode *models.Promocode) error {
 	if promocode == nil {
 		return nil
@@ -55,3 +65,5 @@ func(r *promocodeRepository) Delete(id uint) error {
 func(r *promocodeRepository) Validate(promocode *models.Promocode) (*models.Promocode, error) {
 	return nil, nil
 }
+
+
