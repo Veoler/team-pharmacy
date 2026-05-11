@@ -30,7 +30,7 @@ type OrderCreateRequest struct {
 	User            *User       `json:"-"`
 	UserID          *uint       `json:"user_id"`
 	Status          Status      `json:"status"`
-	Items           []OrderItem `json:"items" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Items           []OrderItem `json:"items"`
 	TotalPrice      int         `json:"total_price"`
 	DiscountTotal   int         `json:"discount_total"`
 	FinalPrice      int         `json:"final_price"`
