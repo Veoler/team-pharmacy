@@ -5,6 +5,10 @@ import (
 	"gorm.io/gorm"
 )
 
+
+// После комментирования полей в models, здесь тоже
+// закомментируйте поля которыe пока красным у вас горят
+
 type PaymentRepository interface {
 	Create(payment *models.Payment) error
 	GetByID(id uint) (*models.Payment, error)
