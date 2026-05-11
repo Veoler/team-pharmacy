@@ -9,5 +9,5 @@ func RegisterRoutes(
 	router *gin.Engine,
 
 ) {
-	
+
 }

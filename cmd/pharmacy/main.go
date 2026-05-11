@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"github.com/gin-gonic/gin"
 	"github.com/Veoler/team-pharmacy/internal/config"
 	"github.com/Veoler/team-pharmacy/internal/models"
