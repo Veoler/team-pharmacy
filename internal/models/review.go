@@ -4,6 +4,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Закомментируйте поля которых пока еще не готовы и красным у вас горят
 
 type Review struct {
 	gorm.Model
