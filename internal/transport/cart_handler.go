@@ -39,18 +39,19 @@ func (h *CartHandler) AddItem(ctx *gin.Context) {
 		return
 	}
 
+	var req models.CartCreateUpdateRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	if _, err := h.user.GetByID(uint(id)); err != nil {
 		if errors.Is(err, services.ErrUserNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	var req models.CartCreateUpdateRequest
-
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 

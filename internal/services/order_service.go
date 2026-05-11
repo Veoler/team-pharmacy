@@ -14,8 +14,8 @@ var ErrOrderNotFound error = errors.New("order по такому id не най�
 type OrderService interface {
 	CreateOrder(req models.OrderCreateRequest) (*models.Order, error)
 	GetByID(id uint) (*models.Order, error)
-	GetAllByUserID(user_id uint) ([]models.Order, error)
-	UpdateOrderStatus(order_id uint, status models.Status) (*models.Order, error)
+	GetAllByUserID(user_id uint) ([]models.OrdersInfo, error)
+	UpdateOrderStatus(order_id uint, status models.OrderUpdateStatusRequest) (*models.Order, error)
 }
 
 type orderService struct {
@@ -33,6 +33,10 @@ func NewOrderService(
 }
 
 func (s *orderService) CreateOrder(req models.OrderCreateRequest) (*models.Order, error) {
+	if req.UserID == nil {
+		return nil, errors.New("user id не указан")
+	}
+
 	user, err := s.user.GetByID(*req.UserID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, ErrUserNotFound
@@ -104,7 +108,7 @@ func (s *orderService) GetByID(id uint) (*models.Order, error) {
 	return order, nil
 }
 
-func (s *orderService) GetAllByUserID(user_id uint) ([]models.Order, error) {
+func (s *orderService) GetAllByUserID(user_id uint) ([]models.OrdersInfo, error) {
 	_, err := s.user.GetByID(user_id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, ErrUserNotFound
@@ -115,10 +119,20 @@ func (s *orderService) GetAllByUserID(user_id uint) ([]models.Order, error) {
 		return nil, err
 	}
 
-	return orders, nil
+	ordersInfo := make([]models.OrdersInfo, 0, len(orders))
+
+	for _, order := range orders {
+		ordersInfo = append(ordersInfo, models.OrdersInfo{
+			OrderID:    order.ID,
+			FinalPrice: order.FinalPrice,
+			Status:     order.Status,
+		})
+	}
+
+	return ordersInfo, nil
 }
 
-func (s *orderService) UpdateOrderStatus(order_id uint, status models.Status) (*models.Order, error) {
+func (s *orderService) UpdateOrderStatus(order_id uint, req models.OrderUpdateStatusRequest) (*models.Order, error) {
 	order, err := s.order.GetByID(order_id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -127,6 +141,15 @@ func (s *orderService) UpdateOrderStatus(order_id uint, status models.Status) (*
 		return nil, err
 	}
 
+	if req.Status == nil {
+		return nil, errors.New("поле status обязательно")
+	}
+
+	var status models.Status
+	status = *req.Status
+	if !isValidStatus(status) {
+		return nil, errors.New("такого статуса не существует")
+	}
 	order.Status = status
 
 	if err := s.order.UpdateStatusByID(order); err != nil {
@@ -134,4 +157,18 @@ func (s *orderService) UpdateOrderStatus(order_id uint, status models.Status) (*
 	}
 
 	return order, nil
+}
+
+func isValidStatus(status models.Status) bool {
+	switch status {
+	case models.StatusCanceled,
+		models.StatusCompleted,
+		models.StatusDraft,
+		models.StatusPaid,
+		models.StatusPendingPayment,
+		models.StatusShipped:
+		return true
+	default:
+		return false
+	}
 }

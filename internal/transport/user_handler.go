@@ -11,13 +11,15 @@ import (
 )
 
 type UserHandler struct {
-	user services.UserService
+	user  services.UserService
+	order services.OrderService
 }
 
 func NewUserHandler(
 	user services.UserService,
+	order services.OrderService,
 ) *UserHandler {
-	return &UserHandler{user: user}
+	return &UserHandler{user: user, order: order}
 }
 
 func (h *UserHandler) RegisterRoutes(router *gin.Engine) {
@@ -74,13 +76,9 @@ func (h *UserHandler) GetOrdersByUserID(ctx *gin.Context) {
 		return
 	}
 
-	orders, err := h.user.GetOrdersByUserID(uint(id))
+	orders, err := h.order.GetAllByUserID(uint(id))
 	if err != nil {
 		if errors.Is(err, services.ErrUserNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-			return
-		}
-		if errors.Is(err, services.ErrOrdersNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}

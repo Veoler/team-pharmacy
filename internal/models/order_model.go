@@ -28,7 +28,7 @@ type Order struct {
 
 type OrderCreateRequest struct {
 	User            *User       `json:"-"`
-	UserID          *uint       `json:"user_id"`
+	UserID          *uint       `json:"-"`
 	Status          Status      `json:"status"`
 	Items           []OrderItem `json:"items"`
 	TotalPrice      int         `json:"total_price"`
@@ -46,4 +46,14 @@ type OrderItem struct {
 	Quantity     int    `json:"quantity"`
 	PricePerUnit int    `json:"price_per_unit"`
 	LineTotal    int    `json:"line_total"`
+}
+
+type OrdersInfo struct {
+	OrderID    uint   `json:"order_id"`
+	Status     Status `json:"status"`
+	FinalPrice int    `json:"final_price"`
+}
+
+type OrderUpdateStatusRequest struct {
+	Status *Status `json:"status"`
 }
