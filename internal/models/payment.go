@@ -24,16 +24,16 @@ const (
 
 type Payment struct {
 	gorm.Model
-	// Order	*Order		`json:"-"`	
-	// OrderID	uint		`json:"order_id" gorm:"not null;index"`
+	Order	*Order		`json:"-"`	
+	OrderID	uint		`json:"order_id" gorm:"not null;index"`
 	Amount	int			`json:"amount" gorm:"not null"`					// сумма платежа:
-	Status	PayStatus		`json:"status" gorm:"type:varchar(16);not null"`// pending, success, failed;
-	Method	PayMethod 		`json:"method" gorm:"type:varchar(16);not null"`// card, cash, online_wallet и т.п.;
+	Status	PayStatus	`json:"status" gorm:"type:varchar(16);not null"`// pending, success, failed;
+	Method	PayMethod 	`json:"method" gorm:"type:varchar(16);not null"`// card, cash, online_wallet и т.п.;
 	PaidAt	*time.Time	`json:"paid_at"`								// время успешного платежа.
 }
 
 type PaymentCreateRequest struct {
-	// OrderID		uint		`json:"order_id"`
+	OrderID		uint		`json:"order_id"`
 	Amount		int			`json:"amount"`
 	Method		PayMethod		`json:"method"`
 	Status		PayStatus		`json:"status"`
