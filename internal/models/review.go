@@ -16,7 +16,7 @@ type Review struct {
 
 type ReviewCreateRequest struct {
 	UserID		uint		`json:"user_id"`
-	MedicineID 	uint		`json:"medicine_id"`
+	MedicineID 	uint		`json:"-"`
 	Rating		uint		`json:"rating"`
 	Text		string		`json:"text"`
 }

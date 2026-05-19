@@ -34,7 +34,11 @@ func (h *OrderHandler) CreateOrder(ctx *gin.Context) {
 	}
 
 	var req models.OrderCreateRequest
-
+////////////////////////////////////////////////////////////
+	// if err := ctx.ShouldBindJSON(id); err != nil {
+	// 	ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	// 	return
+	// }
 	req.UserID = new(uint)
 	*req.UserID = uint(id)
 

@@ -11,8 +11,8 @@ type PromocodeRepository interface {
 	GetByID(id uint) (*models.Promocode, error)
 	Update(promocode *models.Promocode) error
 	Delete(id uint) error
-	Validate(promocode *models.Promocode) (*models.Promocode, error)
-}
+	GetByCode(code string) (*models.Promocode, error)
+	}
 
 type promocodeRepository struct {
 	db *gorm.DB
@@ -62,8 +62,13 @@ func(r *promocodeRepository) Delete(id uint) error {
 	return r.db.Delete(&models.Promocode{}, id).Error
 }
 
-func(r *promocodeRepository) Validate(promocode *models.Promocode) (*models.Promocode, error) {
-	return nil, nil
+func (r *promocodeRepository) GetByCode(code string) (*models.Promocode, error) {
+	var promocode models.Promocode
+
+	if err := r.db.Where("code = ? AND is_active = ?", code, true).First(&promocode).Error; err != nil {
+		return nil, err
+	}
+	return &promocode, nil
 }
 
 

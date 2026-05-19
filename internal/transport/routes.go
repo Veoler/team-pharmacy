@@ -3,7 +3,6 @@ package transport
 import (
 	"github.com/Veoler/team-pharmacy/internal/services"
 	"github.com/gin-gonic/gin"
-	// "github.com/Veoler/team-pharmacy/internal/services"
 )
 
 func RegisterRoutes(
@@ -11,11 +10,26 @@ func RegisterRoutes(
 	user services.UserService,
 	cart services.CartService,
 	order services.OrderService,
+	payment services.PaymentService,
+	promocode services.PromocodeService,
+	review services.ReviewService,
+
 ) {
 	userHandler := NewUserHandler(user, order)
 	userHandler.RegisterRoutes(router)
+
 	cartHandler := NewCartHandler(cart, user)
 	cartHandler.RegisterRoutes(router)
+
 	orderHandler := NewOrderHandler(order)
 	orderHandler.RegisterRoutes(router)
+
+	paymentHandler := NewPaymentHandler(payment, order)
+	paymentHandler.RegisterRoutes(router)
+
+	promocodeHandler := NewPromocodeHandler(promocode)
+	promocodeHandler.RegisterRoutes(router)
+	
+	reviewHandler := NewReviewHandler(review)
+	reviewHandler.RegisterRoutes(router)
 }

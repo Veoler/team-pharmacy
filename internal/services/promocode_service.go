@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/Veoler/team-pharmacy/internal/models"
 	"github.com/Veoler/team-pharmacy/internal/repository"
@@ -10,12 +11,14 @@ import (
 )
 
 var ErrPromocodeNotFound = errors.New("промокод не найден")
+var ErrPromocodeExpired  = errors.New("срок действия промокода истек или еще не начался")
 
 type PromocodeService interface {
 	CreatePromocode(req *models.PromocodeCreateRequest) (*models.Promocode, error)
 	GetAllPromocodes() ([]models.Promocode, error)
 	UpdatePromocode(id uint, req models.PromocodeUpdateRequest) (*models.Promocode, error)
 	DeletePromocode(id uint) error
+	ValidatePromocode(req models.PromocodeValidateRequest) (*models.PromocodeValidateResponse, error)
 }
 
 
@@ -91,6 +94,41 @@ func (s *promocodeService) DeletePromocode(id uint) error {
 	return nil
 }
 
+func (s *promocodeService) ValidatePromocode(req models.PromocodeValidateRequest) (*models.PromocodeValidateResponse, error) {
+	promo, err := s.promocode.GetByCode(req.Code)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrPromocodeNotFound
+		}
+		return nil, err
+	}
+
+	now := time.Now()
+	if now.Before(promo.ValidFrom) || now.After(promo.ValidTo) {
+		return nil, ErrPromocodeExpired
+	}
+
+	discountAmount := 0.0
+	if promo.DiscountType == models.DisTypePercent {
+		discountAmount = (req.OrderAmount * promo.DiscountValue) / 100
+	} else {
+		discountAmount = promo.DiscountValue
+	}
+
+	// Скидка не может быть больше суммы заказа
+	if discountAmount > req.OrderAmount {
+		discountAmount = req.OrderAmount
+	}
+
+	return &models.PromocodeValidateResponse{
+		Code:         promo.Code,
+		Discount:     discountAmount,
+		FinalAmount:  req.OrderAmount - discountAmount,
+		IsApplicable: true,
+	}, nil
+}
+
+
 func (s *promocodeService) validatePromocodeCreate(req *models.PromocodeCreateRequest) error {
 	if req.Code == "" {
 		return errors.New("поле code не должно быть пустым")
@@ -163,11 +201,11 @@ func (s *promocodeService) applyPromocodeUpdate(promocode *models.Promocode, req
 	}
 
 	if req.MaxUses != nil {
-		promocode.MaxUses = *&req.MaxUses
+		promocode.MaxUses = req.MaxUses
 	}
 
 	if req.MaxUsesPerUser != nil {
-		promocode.MaxUsesPerUser = *&req.MaxUsesPerUser
+		promocode.MaxUsesPerUser = req.MaxUsesPerUser
 	}
 
 	if req.IsActive != nil {

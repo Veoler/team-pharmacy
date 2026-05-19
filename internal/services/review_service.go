@@ -9,7 +9,14 @@ import (
 	"gorm.io/gorm"
 )
 
-var ErrReviewNotFound = errors.New("отзыв не найден")
+var (
+	ErrReviewNotFound = errors.New("отзыв не найден")
+	ErrNotPurchased = errors.New("нельзя оставить отзыв: вы не заказывали это лекарство")
+)
+
+type MedicineGetter interface {
+	GetByID(id uint) (*models.Medicine, error)
+}
 
 type ReviewService interface {	
 	CreateReview(req *models.ReviewCreateRequest) (*models.Review, error)
@@ -19,11 +26,17 @@ type ReviewService interface {
 }
 
 type reviewService struct {
-	review repository.ReviewRepository
+	review		repository.ReviewRepository
+	order		repository.OrderRepository
+	medicine	MedicineGetter
 }
 
-func NewReviewService(review repository.ReviewRepository) ReviewService {
-	return &reviewService{review: review}
+func NewReviewService(
+	review repository.ReviewRepository, 
+	order	repository.OrderRepository, 
+	medicine MedicineGetter,
+) ReviewService {
+	return &reviewService{review: review, order: order, medicine: medicine}
 }
 
 func (s *reviewService) CreateReview(req *models.ReviewCreateRequest) (*models.Review, error) {
@@ -31,8 +44,16 @@ func (s *reviewService) CreateReview(req *models.ReviewCreateRequest) (*models.R
 		return nil, err
 	}
 
-	if _, err := s.review.GetByID(req.MedicineID); err != nil {
+	if err := s.checkMedicineExists(req.MedicineID); err != nil {
 		return nil, err
+	}
+
+	purchased, err := s.hasPurchasedMedicine(req.UserID, req.MedicineID)
+	if err != nil {
+		return nil, err
+	}
+	if !purchased {
+		return nil, ErrNotPurchased
 	}
 
 	review := &models.Review{
@@ -46,14 +67,15 @@ func (s *reviewService) CreateReview(req *models.ReviewCreateRequest) (*models.R
 		return nil, err
 	}
 
+	if err := s.updateAvgRating(req.MedicineID); err != nil {
+		return nil, err
+	}
+
 	return review, nil
 }
 
 func (s *reviewService) GetReviewsFromMedicine(medicineID uint) ([]models.Review, error) {
-	if _, err := s.review.GetByID(medicineID); err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrReviewNotFound
-		}
+	if err := s.checkMedicineExists(medicineID); err != nil {
 		return nil, err
 	}
 	
@@ -77,18 +99,31 @@ func (s *reviewService) UpdateReview(id uint, req models.ReviewUpdateRequest) (*
 		return nil, err
 	}
 
+	if err := s.updateAvgRating(review.MedicineID); err != nil {
+		return nil, err
+	}
+
 	return review, nil
 }
 
 func (s *reviewService) DeleteReview(id uint) error {
-	if _, err := s.review.GetByID(id); err != nil {
+	review, err := s.review.GetByID(id); 
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return ErrReviewNotFound
 		}
 		return err
 	}
 
-	return s.review.Delete(id)
+	if err := s.review.Delete(id); err != nil {
+		return err
+	}
+ 
+	if err := s.updateAvgRating(review.MedicineID); err != nil {
+		return err
+	}
+ 
+	return nil
 }
 
 func (s *reviewService) validateReviewCreate(req *models.ReviewCreateRequest) error {
@@ -100,7 +135,7 @@ func (s *reviewService) validateReviewCreate(req *models.ReviewCreateRequest) er
 		return errors.New("поле medicine_id должно быть больше 0")
 	}
 
-	if req.Rating < 1 && req.Rating > 5{
+	if req.Rating < 1 || req.Rating > 5 {
 		return errors.New("поле rating должно быть в диапозоне от 1 до 5")
 	}
 
@@ -113,7 +148,7 @@ func (s *reviewService) validateReviewCreate(req *models.ReviewCreateRequest) er
 
 func (s *reviewService) applyReviewUpdate(review *models.Review, req models.ReviewUpdateRequest) error {
 	if req.Rating != nil {
-		if *req.Rating < 1 && *req.Rating > 5{
+		if *req.Rating < 1 || *req.Rating > 5{
 			return errors.New("поле rating должно быть в диапозоне от 1 до 5")
 		}
 	review.Rating = *req.Rating
@@ -127,5 +162,44 @@ func (s *reviewService) applyReviewUpdate(review *models.Review, req models.Revi
 		review.Text = trimmed
 	}
 
+	return nil
+}
+
+func (s *reviewService) hasPurchasedMedicine(userID uint, medicineID uint) (bool, error) {
+	orders, err := s.order.GetAllByUserID(userID)
+	if err != nil {
+		return false, err
+	}
+ 
+	for _, order := range orders {
+		if order.Status != models.StatusCompleted {
+			continue
+		}
+		for _, item := range order.Items {
+			if item.MedicineID == medicineID {
+				return true, nil
+			}
+		}
+	}
+ 
+	return false, nil
+}
+
+func (s *reviewService) updateAvgRating(medicineID uint) error {
+	avg, err := s.review.GetAvgRating(medicineID)
+	if err != nil {
+		return err
+	}
+ 
+	return s.review.UpdateAvgRating(medicineID, avg)
+}
+
+func (s *reviewService) checkMedicineExists(medicineID uint) error {
+	if _, err := s.medicine.GetByID(medicineID); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrMedicineNotFound
+		}
+		return err
+	}
 	return nil
 }
