@@ -48,13 +48,8 @@ func (h *PromocodeHandler) CreatePromo(c *gin.Context) {
 func (h *PromocodeHandler) GetAllPromo(c *gin.Context) {
 	promocodes, err := h.promocode.GetAllPromocodes()
 	if err != nil {
-		switch {
-		case errors.Is(err, services.ErrPromocodeNotFound):
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		}
-		return		
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return	
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": promocodes})
@@ -69,7 +64,7 @@ func (h *PromocodeHandler) UpdatePromo(c *gin.Context) {
 
 	var input models.PromocodeUpdateRequest
 
-	if err := c.ShouldBindJSON(input); err != nil {
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -111,7 +106,7 @@ func (h *PromocodeHandler) DeletePromo(c *gin.Context) {
 func (h *PromocodeHandler) ValidatePromo(c *gin.Context) {
 	var req models.PromocodeValidateRequest
 	
-	if err := c.ShouldBindJSON(req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -121,13 +116,13 @@ func (h *PromocodeHandler) ValidatePromo(c *gin.Context) {
 		switch {
 		case errors.Is(err, services.ErrPromocodeNotFound):
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		case errors.Is(err, services.ErrPromocodeExpired):
-			c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		case errors.Is(err, services.ErrPromocodeExpired), errors.Is(err, services.ErrPromocodeInactive):
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		default:
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
 		return		
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"data": promocode})
+	c.JSON(http.StatusOK, gin.H{"data": promocode})
 }

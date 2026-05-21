@@ -14,7 +14,7 @@ import (
 func main() {
 	db := config.SetUpDatabaseConnection()
 
-	if err := db.AutoMigrate(&models.User{}, &models.Order{}, &models.OrderItem{}, &models.Cart{}, &models.CartItem{}, &models.Payment{}); err != nil {
+	if err := db.AutoMigrate(&models.User{}, &models.Order{}, &models.OrderItem{}, &models.Cart{}, &models.CartItem{}, &models.Payment{}, &models.Promocode{}, &models.Review{}); err != nil {
 		log.Fatalf("не удалось выполнить миграции: %v", err)
 	}
 

@@ -56,7 +56,7 @@ func (h *ReviewHandler) CreateRev(c *gin.Context) {
 }
 
 func (h *ReviewHandler) GetRevsFromMed(c *gin.Context) {
-	medicineID, err := strconv.Atoi(c.Param("medicine_id"))
+	medicineID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "некорректный medicine_id"})
 		return

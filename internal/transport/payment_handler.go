@@ -11,11 +11,10 @@ import (
 
 type PaymentHandler struct {
 	payment services.PaymentService
-	order services.OrderService
 }
 
-func NewPaymentHandler(payment services.PaymentService, order services.OrderService) *PaymentHandler {
-	return &PaymentHandler{payment: payment, order: order}
+func NewPaymentHandler(payment services.PaymentService) *PaymentHandler {
+	return &PaymentHandler{payment: payment}
 }
 
 func (h *PaymentHandler) RegisterRoutes (router *gin.Engine) {
@@ -43,16 +42,20 @@ func (h *PaymentHandler) CreatePay(c *gin.Context) {
 
 	req.OrderID = uint(orderID)
 	
-	payment, err := h.payment.CreatePayment(req)
+	payment, summary, err := h.payment.CreatePayment(req)
 	if err != nil {
-		if errors.Is(err, services.ErrOrderNotFound) {
-	 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		switch {
+		case errors.Is(err, services.ErrOrderNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		case errors.Is(err, services.ErrPaymentExceedsTotal):
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"data": payment})
+	c.JSON(http.StatusCreated, gin.H{"payment": payment, "order": summary})
 }
 
 func (h *PaymentHandler) GetPayFromOrd (c *gin.Context) {

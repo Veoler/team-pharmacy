@@ -24,12 +24,12 @@ func RegisterRoutes(
 	orderHandler := NewOrderHandler(order)
 	orderHandler.RegisterRoutes(router)
 
-	paymentHandler := NewPaymentHandler(payment, order)
+	paymentHandler := NewPaymentHandler(payment)
 	paymentHandler.RegisterRoutes(router)
 
 	promocodeHandler := NewPromocodeHandler(promocode)
 	promocodeHandler.RegisterRoutes(router)
-	
+
 	reviewHandler := NewReviewHandler(review)
 	reviewHandler.RegisterRoutes(router)
 }

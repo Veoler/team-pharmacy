@@ -43,7 +43,7 @@ func(r *paymentRepository) GetFromOrder(orderID uint) ([]models.Payment, error) 
 
 	if err := r.db.
 	Model(&models.Payment{}).
-	Where("order_id = &", orderID).
+	Where("order_id = ?", orderID).
 	Find(&payments).Error; err != nil {
 		return nil, err
 	}

@@ -22,6 +22,14 @@ const (
 	PayMethodOnlineWallet	PayMethod = "online_wallet"
 )
 
+type PaymentStatus string
+
+const (
+	PaymentStatusUnpaid  PaymentStatus = "unpaid"  
+	PaymentStatusPartial PaymentStatus = "partial" 
+	PaymentStatusPaid    PaymentStatus = "paid"    
+)
+
 type Payment struct {
 	gorm.Model
 	Order	*Order		`json:"-"`	
@@ -33,9 +41,14 @@ type Payment struct {
 }
 
 type PaymentCreateRequest struct {
-	OrderID		uint		`json:"order_id"`
+	OrderID		uint		`json:"-"`
 	Amount		int			`json:"amount"`
-	Method		PayMethod		`json:"method"`
-	Status		PayStatus		`json:"status"`
-	PaidAt		*time.Time	`json:"paid_at,omitempty"`
+	Method		PayMethod	`json:"method"`
+}
+
+type OrderPaymentSummary struct {
+    OrderID			uint			`json:"order_id"`
+    FinalPrice		int				`json:"final_price"`
+    PaidAmount		int				`json:"paid_amount"`
+    PaymentStatus 	PaymentStatus	`json:"payment_status"`
 }
