@@ -5,10 +5,6 @@ import (
 	"gorm.io/gorm"
 )
 
-
-// После комментирования полей в models, здесь тоже
-// закомментируйте поля которыe пока красным у вас горят
-
 type PaymentRepository interface {
 	Create(payment *models.Payment) error
 	GetByID(id uint) (*models.Payment, error)
@@ -29,7 +25,7 @@ func(r *paymentRepository) Create(payment *models.Payment) error {
 		return nil
 	}
 
-	return r.db.Create(&payment).Error
+	return r.db.Create(payment).Error
 }
 
 func(r *paymentRepository) GetByID(id uint) (*models.Payment, error) {
@@ -47,7 +43,7 @@ func(r *paymentRepository) GetFromOrder(orderID uint) ([]models.Payment, error) 
 
 	if err := r.db.
 	Model(&models.Payment{}).
-	Where("order_id = &", orderID).
+	Where("order_id = ?", orderID).
 	Find(&payments).Error; err != nil {
 		return nil, err
 	}

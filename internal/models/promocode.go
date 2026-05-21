@@ -19,7 +19,7 @@ type Promocode struct {
 	Code			string		`json:"code" gorm:"type:varchar(64);uniqueIndex;not null"`	// строковый код (например, SPRING2025);
 	Description		string		`json:"description" gorm:"type:text"`
 	DiscountType	DisType		`json:"discount_type"  gorm:"type:varchar(16);not null"`	// percent или fixed;
-	DiscountValue	int			`json:"discount_value" gorm:"not null;default:0"`			// размер скидки (процент или фиксированная сумма);
+	DiscountValue	float64	    `json:"discount_value" gorm:"not null;default:0"`			// размер скидки (процент или фиксированная сумма);
 	ValidFrom		time.Time	`json:"valid_from" gorm:"not null"` 
 	ValidTo			time.Time	`json:"valid_to" gorm:"not null"` 							// период действия;
 	MaxUses			*uint		`json:"max_uses" gorm:"default:0"`							// необязательное ограничение общего количества использований;
@@ -31,7 +31,7 @@ type PromocodeCreateRequest struct {
     Code            string    `json:"code"`
     Description     string    `json:"description"`
     DiscountType    DisType   `json:"discount_type"`
-    DiscountValue   int       `json:"discount_value"`
+    DiscountValue   float64   `json:"discount_value"`
     ValidFrom       time.Time `json:"valid_from"`
     ValidTo         time.Time `json:"valid_to"`
     MaxUses         *uint     `json:"max_uses,omitempty"`
@@ -43,10 +43,23 @@ type PromocodeUpdateRequest struct {
     Code            *string    `json:"code,omitempty"`
     Description     *string    `json:"description,omitempty"`
     DiscountType    *DisType   `json:"discount_type,omitempty"`
-    DiscountValue   *int       `json:"discount_value,omitempty"`
+    DiscountValue   *float64   `json:"discount_value,omitempty"`
     ValidFrom       *time.Time `json:"valid_from,omitempty"`
     ValidTo         *time.Time `json:"valid_to,omitempty"`
     MaxUses         *uint      `json:"max_uses,omitempty"`
     MaxUsesPerUser  *uint      `json:"max_uses_per_user,omitempty"`
     IsActive        *bool      `json:"is_active,omitempty"`
+}
+
+type PromocodeValidateRequest struct {
+    Code           string  `json:"code"`
+    OrderAmount    float64 `json:"order_amount"`
+}
+
+type PromocodeValidateResponse struct {
+	Code         string     `json:"code"`
+	Discount     float64    `json:"discount_amount"`
+	FinalAmount  float64    `json:"final_amount"`
+	IsApplicable bool       `json:"is_applicable"`
+	Message      string     `json:"message,omitempty"`
 }
