@@ -68,6 +68,10 @@ func (h *CategoryesHandler) GetSubcategoryes(ctx *gin.Context) {
 
 	subcategories, err := h.categoryes.GetAllSubcategoryes(uint(id))
 	if err != nil {
+		if errors.Is(err, services.ErrCategoryNotFound) {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
