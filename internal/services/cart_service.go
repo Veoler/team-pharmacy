@@ -165,7 +165,13 @@ func (s *cartService) DeleteItem(id uint, userID uint) error {
 			return ErrUserNotFound
 		}
 	}
-
+//добавлено
+	if _, err := s.cart.GetCartByUserID(userID); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrCartNotFound
+		}
+	}
+// до сюда
 	if err := s.cart.DeleteItem(id); err != nil {
 		return err
 	}
@@ -178,7 +184,13 @@ func (s *cartService) DeleteCart(id uint) error {
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return ErrUserNotFound
 	}
-
+//добавлено
+	if _, err := s.cart.GetCartByUserID(id); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrCartNotFound
+		}
+	}
+//до сюда
 	if err := s.cart.DeleteCart(id); err != nil {
 		return err
 	}
