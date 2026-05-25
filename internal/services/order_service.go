@@ -88,9 +88,9 @@ func (s *orderService) CreateOrder(req models.OrderCreateRequest) (*models.Order
 		}
 		if promocode.IsActive {
 			if promocode.DiscountType == models.DisTypePercent {
-				discauntTotal = total * (promocode.DiscountValue / 100)
+				discauntTotal = total * int((promocode.DiscountValue / 100))
 			} else if promocode.DiscountType == models.DisTypeFixed {
-				discauntTotal = promocode.DiscountValue
+				discauntTotal = int(promocode.DiscountValue)
 			}
 		}
 		return nil, errors.New("этот промокод уже закончился")
