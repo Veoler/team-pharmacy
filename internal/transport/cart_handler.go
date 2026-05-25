@@ -26,7 +26,7 @@ func (h *CartHandler) RegisterRoutes(router *gin.Engine) {
 	users := router.Group("/users")
 	{
 		users.POST("/:id/cart/items", h.AddItem)
-		users.PATCH("/:id/cart/items/:item_id")
+		users.PATCH("/:id/cart/items/:item_id", h.AddQuantity) // добавлено
 		users.DELETE("/:id/cart/items/:item_id", h.DeleteItem)
 		users.DELETE("/:id/cart", h.DeleteCart)
 	}
