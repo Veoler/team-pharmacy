@@ -63,6 +63,7 @@ func (s *categoryesService) GetAllSubcategoryes(categoryID uint) ([]models.Subca
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrCategoryNotFound
 		}
+		return nil, err
 	}
 
 	subcategoryes, err := s.categoryes.GetAllSubcategoryes(categoryID)
@@ -81,6 +82,7 @@ func (s *categoryesService) CreateSubcategory(req models.SubcategoryCreateReques
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrCategoryNotFound
 		}
+		return nil, err
 	}
 
 	if req.Name == nil {
