@@ -19,6 +19,6 @@ type Subcategory struct {
 }
 
 type SubcategoryCreateRequest struct {
-	CategoryID uint   `json:"subcategory_id"`
-	Name       string `json:"name"`
+	CategoryID *uint   `json:"subcategory_id"`
+	Name       *string `json:"name"`
 }
