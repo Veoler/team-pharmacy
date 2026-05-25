@@ -13,7 +13,7 @@ type Medicine struct {
 	SubCategoryID        uint   `json:"subcategory_id" gorm:"not null;index"`
 	Manufacturer         string `json:"manufacturer"`
 	PrescriptionRequired bool   `json:"prescription_required"`
-	AvgRating            int    `json:"avg_rating"`
+	AvgRating            float64    `json:"avg_rating"`
 }
 
 type MedicineInfo struct {
@@ -21,7 +21,7 @@ type MedicineInfo struct {
 	Name      string `json:"name"`
 	Price     int    `json:"price"`
 	InStock   bool   `json:"in_stock"`
-	AvgRating int    `json:"avg_rating"`
+	AvgRating float64    `json:"avg_rating"`
 }
 
 type MedicineCreateRequest struct {

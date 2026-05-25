@@ -15,7 +15,7 @@ var (
 )
 
 type PaymentService interface {
-	CreatePayment(req models.PaymentCreateRequest) (*models.Payment, *models.OrderPaymentSummary, error)
+	CreatePayment(req models.PaymentCreateRequest) (*models.Payment, *models.Order, error)
 	GetPaymentByID(id uint) (*models.Payment, error)
 	GetPaymentFromOrder(orderID uint) ([]models.Payment, error)
 	DeletePayment(id uint) error
@@ -30,7 +30,7 @@ func NewPaymentService(payment repository.PaymentRepository, order repository.Or
 	return &paymentService{payment: payment, order: order}
 }
 
-func (s *paymentService) CreatePayment(req models.PaymentCreateRequest) (*models.Payment, *models.OrderPaymentSummary, error) {
+func (s *paymentService) CreatePayment(req models.PaymentCreateRequest) (*models.Payment, *models.Order, error) {
 	if err := s.validatePaymentCreate(req); err != nil {
 		return nil, nil, err
 	}
@@ -179,17 +179,6 @@ func isValidPayMethod(method models.PayMethod) bool {
 	}
 }
 
-func isValidPayStatus(status models.PayStatus) bool {
-	switch status {
-	case models.PayStatusPending,
-	models.PayStatusSuccess,
-	models.PayStatusFailed:
-		return true
-	default: 
-		return false
-	}
-}
-
 func calcTotalPaid(payments []models.Payment) int {
 	total := 0
 	for _, p := range payments {
@@ -200,21 +189,23 @@ func calcTotalPaid(payments []models.Payment) int {
 	return total
 }
 
-func buildSummary(order *models.Order, totalPaid int) *models.OrderPaymentSummary {
-	var status models.PaymentStatus
+func buildSummary(order *models.Order, totalPaid int) *models.Order {
+	var status models.Status
 	switch {
 	case totalPaid == 0:
-		status = models.PaymentStatusUnpaid
+		status = models.StatusDraft
 	case totalPaid < order.FinalPrice:
-		status = models.PaymentStatusPartial
+		status = models.StatusPendingPayment
+	case totalPaid < order.FinalPrice:
+		status = models.StatusCanceled
+	case totalPaid < order.FinalPrice:
+		status = models.StatusShipped
 	default:
-		status = models.PaymentStatusPaid
+		status = models.StatusCompleted
 	}
- 
-	return &models.OrderPaymentSummary{
-		OrderID:       order.ID,
+
+	return &models.Order{
 		FinalPrice:    order.FinalPrice,
-		PaidAmount:    totalPaid,
-		PaymentStatus: status,
+		Status: status,
 	}
 }

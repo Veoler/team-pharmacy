@@ -23,6 +23,7 @@ type orderService struct {
 	cart      repository.CartRepository
 	user      repository.UserRepository
 	promocode repository.PromocodeRepository
+	medicine  repository.MedicineRepository
 }
 
 func NewOrderService(
@@ -30,8 +31,9 @@ func NewOrderService(
 	cart repository.CartRepository,
 	user repository.UserRepository,
 	promocode repository.PromocodeRepository,
+	medicine repository.MedicineRepository,
 ) OrderService {
-	return &orderService{order: order, cart: cart, user: user, promocode: promocode}
+	return &orderService{order: order, cart: cart, user: user, promocode: promocode, medicine: medicine}
 }
 
 func (s *orderService) CreateOrder(req models.OrderCreateRequest) (*models.Order, error) {
@@ -55,9 +57,15 @@ func (s *orderService) CreateOrder(req models.OrderCreateRequest) (*models.Order
 	orderItem := []models.OrderItem{}
 
 	for _, v := range cart.Items {
+		medicine, err := s.medicine.GetByID(*v.MedicineID)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, ErrMedicineNotFound
+			}
+		}
 		tempItem := models.OrderItem{
-			MedicineID:   *v.MedicineID,
-			MedicineName: v.MedicineName,
+			MedicineID:   medicine.ID,
+			MedicineName: medicine.Name,
 			Quantity:     *v.Quantity,
 			LineTotal:    v.LineTotal,
 			PricePerUnit: *v.PricePerUnit,

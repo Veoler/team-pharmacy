@@ -20,15 +20,17 @@ type CartService interface {
 }
 
 type cartService struct {
-	cart repository.CartRepository
-	user repository.UserRepository
+	cart     repository.CartRepository
+	user     repository.UserRepository
+	medicine repository.MedicineRepository
 }
 
 func NewCartService(
 	cart repository.CartRepository,
 	user repository.UserRepository,
+	medicine repository.MedicineRepository,
 ) CartService {
-	return &cartService{cart: cart, user: user}
+	return &cartService{cart: cart, user: user, medicine: medicine}
 }
 
 func (s *cartService) AddItem(req models.CartCreateUpdateRequest) (*models.Cart, error) {
@@ -95,6 +97,11 @@ func (s *cartService) validateAddItem(req models.CartCreateUpdateRequest) error 
 	for _, item := range req.Items {
 		if item.MedicineID == nil {
 			return errors.New("medicine_id для items обязателен")
+		}
+		if _, err := s.medicine.GetByID(*item.MedicineID); err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrMedicineNotFound
+			}
 		}
 		if item.Quantity == nil {
 			return errors.New("quantity для items обязателен")
@@ -165,13 +172,13 @@ func (s *cartService) DeleteItem(id uint, userID uint) error {
 			return ErrUserNotFound
 		}
 	}
-//добавлено
+	//добавлено
 	if _, err := s.cart.GetCartByUserID(userID); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return ErrCartNotFound
 		}
 	}
-// до сюда
+	// до сюда
 	if err := s.cart.DeleteItem(id); err != nil {
 		return err
 	}
@@ -184,13 +191,13 @@ func (s *cartService) DeleteCart(id uint) error {
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return ErrUserNotFound
 	}
-//добавлено
+	//добавлено
 	if _, err := s.cart.GetCartByUserID(id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return ErrCartNotFound
 		}
 	}
-//до сюда
+	//до сюда
 	if err := s.cart.DeleteCart(id); err != nil {
 		return err
 	}
