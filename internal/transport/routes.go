@@ -14,7 +14,7 @@ func RegisterRoutes(
 	promocode services.PromocodeService,
 	review services.ReviewService,
 	category services.CategoryesService,
-	mediicne services.MedicineService,
+	medicine services.MedicineService,
 
 ) {
 	userHandler := NewUserHandler(user, order)
@@ -38,6 +38,6 @@ func RegisterRoutes(
 	categoryHandler := NewCategoryesHandler(category)
 	categoryHandler.RegisterRoutes(router)
 
-	medicineHandler := NewMedicineHandler(mediicne)
+	medicineHandler := NewMedicineHandler(medicine)
 	medicineHandler.RegisterRoutes(router)
 }
