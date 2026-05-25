@@ -30,8 +30,8 @@ func main() {
 	medicineRepo := repository.NewMedicineRepository(db)
 
 	userService := services.NewUserService(userRepo)
-	cartService := services.NewCartService(cartRepo, userRepo)
-	orderService := services.NewOrderService(orderRepo, cartRepo, userRepo, promocodeRepo)
+	cartService := services.NewCartService(cartRepo, userRepo, medicineRepo)
+	orderService := services.NewOrderService(orderRepo, cartRepo, userRepo, promocodeRepo, medicineRepo)
 	paymentService := services.NewPaymentService(paymentRepo, orderRepo)
 	promocodeService := services.NewPromocodeService(promocodeRepo)
 	reviewService := services.NewReviewService(reviewRepo, orderRepo, medicineRepo)

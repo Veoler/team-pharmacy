@@ -24,6 +24,7 @@ type Order struct {
 	FinalPrice      int         `json:"final_price"`
 	DeliveryAddress string      `json:"delivery_address"`
 	Comment         string      `json:"comment"`
+	PromocodeID		*uint		`json:"promocode_id" gorm:"index"`
 }
 
 type OrderCreateRequest struct {
@@ -36,6 +37,7 @@ type OrderCreateRequest struct {
 	FinalPrice      int         `json:"final_price"`
 	DeliveryAddress string      `json:"delivery_address"`
 	Comment         string      `json:"comment"`
+	PromocodeID		*uint		`json:"promocode_id"`
 }
 
 type OrderItem struct {
