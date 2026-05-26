@@ -85,7 +85,7 @@ func (s *orderService) CreateOrder(req models.OrderCreateRequest) (*models.Order
 		comment = req.Comment
 	}
 
-	discauntTotal := 0
+	discountTotal := 0
 	if req.PromocodeID != nil {
 		promocode, err := s.promocode.GetByID(*req.PromocodeID)
 		if err != nil {
@@ -94,18 +94,19 @@ func (s *orderService) CreateOrder(req models.OrderCreateRequest) (*models.Order
 			}
 			return nil, err
 		}
+
 		if promocode.IsActive {
-    	switch promocode.DiscountType {
-    	case models.DisTypePercent:
-        	discountTotal = (total * int(promocode.DiscountValue)) / 100
-    	case models.DisTypeFixed:
-        	discountTotal = int(promocode.DiscountValue)
+    		switch promocode.DiscountType {
+    		case models.DisTypePercent:
+        		discountTotal = (total * int(promocode.DiscountValue)) / 100
+    		case models.DisTypeFixed:
+        		discountTotal = int(promocode.DiscountValue)
     		}
 		}
 		return nil, errors.New("этот промокод уже закончился")
 	}
 
-	final := total - discauntTotal
+	final := total - discountTotal
 	// добавлено
 	status := models.StatusDraft
 
@@ -117,7 +118,7 @@ func (s *orderService) CreateOrder(req models.OrderCreateRequest) (*models.Order
 		FinalPrice:      final,
 		DeliveryAddress: address,
 		Comment:         comment,
-		DiscountTotal:   discauntTotal,
+		DiscountTotal:   discountTotal,
 	}
 
 	if err := s.order.CreateOrder(&order); err != nil {
