@@ -2,16 +2,17 @@ package services
 
 import (
 	"errors"
-	"time" 
+	"time"
 
 	"github.com/Veoler/team-pharmacy/internal/models"
 	"github.com/Veoler/team-pharmacy/internal/repository"
 	"gorm.io/gorm"
 )
 
-var ( 
-	ErrPaymentNotFound = errors.New("платеж не найден")
-	ErrPaymentExceedsTotal  = errors.New("сумма платежей превысит итоговую стоимость заказа")
+var (
+	ErrPaymentNotFound     = errors.New("платеж не найден")
+	ErrPaymentExceedsTotal = errors.New("сумма платежей превысит итоговую стоимость заказа")
+	// ErrPaymentWas = errors.New("заказ полностью оплачен")
 )
 
 type PaymentService interface {
@@ -36,51 +37,54 @@ func (s *paymentService) CreatePayment(req models.PaymentCreateRequest) (*models
 	}
 
 	order, err := s.order.GetByID(req.OrderID)
-    if err != nil {
-        if errors.Is(err, gorm.ErrRecordNotFound) {
-            return nil, nil, ErrOrderNotFound
-        }
-        return nil, nil, err
-    }
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil, ErrOrderNotFound
+		}
+		return nil, nil, err
+	}
 
 	existingPayments, err := s.payment.GetFromOrder(req.OrderID)
 	if err != nil {
-		return nil,nil,  err
+		return nil, nil, err
 	}
 
 	totalPaid := calcTotalPaid(existingPayments)
-
 
 	if totalPaid+req.Amount > order.FinalPrice {
 		return nil, nil, ErrPaymentExceedsTotal
 	}
 
+	// if order.Status == models.StatusPaid {
+	// 	return nil, nil, ErrPaymentWas
+	// }
+
 	now := time.Now()
 	newPayment := &models.Payment{
 		OrderID: req.OrderID,
-		Amount: req.Amount,
-		Method: req.Method,
-		Status: models.PayStatusSuccess,
-		PaidAt: &now,
+		Amount:  req.Amount,
+		Method:  req.Method,
+		Status:  models.PayStatusSuccess,
+		PaidAt:  &now,
 	}
 
 	if err := s.payment.Create(newPayment); err != nil {
 		return nil, nil, err
 	}
-	
+
 	if totalPaid+req.Amount >= order.FinalPrice {
 		order.Status = models.StatusPaid
 		if err := s.order.UpdateStatusByID(order); err != nil {
 			return nil, nil, err
 		}
 	}
- 
+
 	summary := buildSummary(order, totalPaid+req.Amount)
- 
+
 	return newPayment, summary, nil
 }
 
-func  (s *paymentService) GetPaymentByID(id uint) (*models.Payment, error) {
+func (s *paymentService) GetPaymentByID(id uint) (*models.Payment, error) {
 	payment, err := s.payment.GetByID(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -100,14 +104,14 @@ func (s *paymentService) GetPaymentFromOrder(orderID uint) ([]models.Payment, er
 		}
 		return nil, err
 	}
-	
+
 	payments, err := s.payment.GetFromOrder(orderID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrPaymentNotFound
 		}
 		return nil, err
-	}	
+	}
 
 	return payments, nil
 }
@@ -120,7 +124,7 @@ func (s *paymentService) DeletePayment(id uint) error {
 		}
 		return err
 	}
- 
+
 	if err := s.payment.Delete(id); err != nil {
 		return err
 	}
@@ -130,22 +134,27 @@ func (s *paymentService) DeletePayment(id uint) error {
 		if err != nil {
 			return err
 		}
- 
+
 		remainingPayments, err := s.payment.GetFromOrder(payment.OrderID)
 		if err != nil {
 			return err
 		}
- 
+
 		totalPaid := calcTotalPaid(remainingPayments)
- 
-		if totalPaid < order.FinalPrice {
+
+		if totalPaid == 0 {
+			order.Status = models.StatusDraft
+			if err := s.order.UpdateStatusByID(order); err != nil {
+				return err
+			}
+		} else if totalPaid < order.FinalPrice {
 			order.Status = models.StatusPendingPayment
 			if err := s.order.UpdateStatusByID(order); err != nil {
 				return err
 			}
 		}
 	}
- 
+
 	return nil
 }
 
@@ -156,7 +165,7 @@ func (s *paymentService) validatePaymentCreate(req models.PaymentCreateRequest) 
 
 	if req.OrderID <= 0 {
 		return errors.New("поле order_id должно быть больше 0")
-	}	
+	}
 
 	if !isValidPayMethod(req.Method) {
 		return errors.New("поле method должно быть одним из значений: card, cash, online_wallet")
@@ -167,11 +176,11 @@ func (s *paymentService) validatePaymentCreate(req models.PaymentCreateRequest) 
 
 func isValidPayMethod(method models.PayMethod) bool {
 	switch method {
-	case models.PayMethodCard, 
-	models.PayMethodCash, 
-	models.PayMethodOnlineWallet:
+	case models.PayMethodCard,
+		models.PayMethodCash,
+		models.PayMethodOnlineWallet:
 		return true
-	default: 
+	default:
 		return false
 	}
 }
@@ -191,22 +200,29 @@ func buildSummary(order *models.Order, totalPaid int) *models.Order {
 	switch {
 	case totalPaid == 0:
 		status = models.StatusDraft
-	case totalPaid < order.FinalPrice:
+	case totalPaid < order.FinalPrice && totalPaid > 0:
 		status = models.StatusPendingPayment
 	default:
 		status = models.StatusPaid
 	}
 
 	return &models.Order{
-    	User:				order.User,	
-    	UserID:				order.UserID,
-    	Status:				status,
-    	Items:				order.Items,
-    	TotalPrice:			totalPaid,
-    	DiscountTotal:		order.DiscountTotal,
-    	FinalPrice:			order.FinalPrice,
-    	DeliveryAddress:	order.DeliveryAddress, 
-    	Comment:			order.Comment,
-    	PromocodeID:		order.PromocodeID,
+		Model: gorm.Model{
+			ID:        order.ID,
+			CreatedAt: order.CreatedAt,
+			UpdatedAt: order.UpdatedAt,
+			DeletedAt: order.DeletedAt,
+		},
+		User:            order.User,
+		UserID:          order.UserID,
+		Status:          status,
+		Items:           order.Items,
+		TotalPrice:      totalPaid,
+		DiscountTotal:   order.DiscountTotal,
+		FinalPrice:      order.FinalPrice,
+		DeliveryAddress: order.DeliveryAddress,
+		Comment:         order.Comment,
+		PromocodeID:     order.PromocodeID,
 	}
 }
+
