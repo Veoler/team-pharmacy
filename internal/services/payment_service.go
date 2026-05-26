@@ -55,26 +55,23 @@ func (s *paymentService) CreatePayment(req models.PaymentCreateRequest) (*models
 		return nil, nil, ErrPaymentExceedsTotal
 	}
 
+	now := time.Now()
 	newPayment := &models.Payment{
 		OrderID: req.OrderID,
 		Amount: req.Amount,
 		Method: req.Method,
-		Status: models.PayStatusPending,
+		Status: models.PayStatusSuccess,
+		PaidAt: &now,
 	}
 
 	if err := s.payment.Create(newPayment); err != nil {
 		return nil, nil, err
 	}
-
-	if newPayment.Status == models.PayStatusSuccess {
-		now := time.Now()
-		newPayment.PaidAt = &now
- 
-		if totalPaid+req.Amount >= order.FinalPrice {
-			order.Status = models.StatusPaid
-			if err := s.order.UpdateStatusByID(order); err != nil {
-				return nil, nil, err
-			}
+	
+	if totalPaid+req.Amount >= order.FinalPrice {
+		order.Status = models.StatusPaid
+		if err := s.order.UpdateStatusByID(order); err != nil {
+			return nil, nil, err
 		}
 	}
  
@@ -196,16 +193,20 @@ func buildSummary(order *models.Order, totalPaid int) *models.Order {
 		status = models.StatusDraft
 	case totalPaid < order.FinalPrice:
 		status = models.StatusPendingPayment
-	case totalPaid < order.FinalPrice:
-		status = models.StatusCanceled
-	case totalPaid < order.FinalPrice:
-		status = models.StatusShipped
 	default:
-		status = models.StatusCompleted
+		status = models.StatusPaid
 	}
 
 	return &models.Order{
-		FinalPrice:    order.FinalPrice,
-		Status: status,
+    	User:				order.User,	
+    	UserID:				order.UserID,
+    	Status:				status,
+    	Items:				order.Items,
+    	TotalPrice:			totalPaid,
+    	DiscountTotal:		order.DiscountTotal,
+    	FinalPrice:			order.FinalPrice,
+    	DeliveryAddress:	order.DeliveryAddress, 
+    	Comment:			order.Comment,
+    	PromocodeID:		order.PromocodeID,
 	}
 }
