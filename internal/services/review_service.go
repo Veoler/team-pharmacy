@@ -172,7 +172,7 @@ func (s *reviewService) hasPurchasedMedicine(userID uint, medicineID uint) (bool
 	}
  
 	for _, order := range orders {
-		if order.Status != models.StatusCompleted {
+		if order.Status != models.StatusPaid {
 			continue
 		}
 		for _, item := range order.Items {

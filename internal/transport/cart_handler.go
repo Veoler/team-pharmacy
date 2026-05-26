@@ -46,6 +46,9 @@ func (h *CartHandler) AddItem(ctx *gin.Context) {
 		return
 	}
 
+	req.UserID = new(uint)
+	*req.UserID = uint(id)
+
 	if _, err := h.user.GetByID(uint(id)); err != nil {
 		if errors.Is(err, services.ErrUserNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
