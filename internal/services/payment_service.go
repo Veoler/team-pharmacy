@@ -12,7 +12,6 @@ import (
 var (
 	ErrPaymentNotFound     = errors.New("платеж не найден")
 	ErrPaymentExceedsTotal = errors.New("сумма платежей превысит итоговую стоимость заказа")
-	// ErrPaymentWas = errors.New("заказ полностью оплачен")
 )
 
 type PaymentService interface {
@@ -54,10 +53,6 @@ func (s *paymentService) CreatePayment(req models.PaymentCreateRequest) (*models
 	if totalPaid+req.Amount > order.FinalPrice {
 		return nil, nil, ErrPaymentExceedsTotal
 	}
-
-	// if order.Status == models.StatusPaid {
-	// 	return nil, nil, ErrPaymentWas
-	// }
 
 	now := time.Now()
 	newPayment := &models.Payment{
