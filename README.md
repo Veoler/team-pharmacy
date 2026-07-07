@@ -41,7 +41,6 @@ go run main.go
   <img alt="PostgresSQL" src="https://img.shields.io/badge/-PostgresSQL-45b8d8?style=for-the-badge&logo=postgressql&logoColor=white" />
   <img alt="Gin" src="https://img.shields.io/badge/-Gin-white?style=for-the-badge&logo=gin&logoColor=black" />
 </p>
----
 
 ## Команда проекта
 
@@ -56,7 +55,6 @@ go run main.go
     <img alt="Kasumov" src="https://img.shields.io/badge/-Islam_Bataev-black?style=for-the-badge&logo=github&logoColor=white" />
   </a>
 </h3>
----
 
 ### В этом проекте я выполнял следующие задачи:
 
@@ -73,7 +71,3 @@ go run main.go
 * **Gin Gonic** — для построения чистых REST-эндпоинтов, обработки HTTP-статусов и валидации входящего JSON.
 * **Интерфейсы в Go** — для связывания слоев `transport`, `services` и `repository`, что обеспечивает слабую связанность компонентов.
 * **Data Transfer Objects (DTO)** — для входящих запросов на создание и частичное обновление (`PATCH`) сущностей, чтобы защитить таблицы БД от сквозной перезаписи.
-
-```
-
-```
