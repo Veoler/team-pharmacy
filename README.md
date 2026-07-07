@@ -38,8 +38,10 @@ go run main.go
 <p>
   <img alt="Github" src="https://img.shields.io/badge/-Github-black?style=for-the-badge&logo=github&logoColor=white" />
   <img alt="Git" src="https://img.shields.io/badge/-Git-F05032?style=for-the-badge&logo=git&logoColor=white" />
-  <img alt="PostgresSQL" src="https://img.shields.io/badge/-PostgresSQL-45b8d8?style=for-the-badge&logo=postgressql&logoColor=white" />
+  <img alt="PostgresSQL" src="https://img.shields.io/badge/-PostgresSQL-45b8d8?style=for-the-badge&logo=postgresl&logoColor=white" />
   <img alt="Gin" src="https://img.shields.io/badge/-Gin-white?style=for-the-badge&logo=gin&logoColor=black" />
+  <img alt="Godotenv" src="https://img.shields.io/badge/-Godotenv-grey?style=for-the-badge&logo=godotenv&logoColor=orange" />
+  <img alt="Gorm" src="https://img.shields.io/badge/-Gorm-blue?style=for-the-badge&logo=gorm&logoColor=orange" />
 </p>
 
 ## Команда проекта
